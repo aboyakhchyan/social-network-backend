@@ -1,0 +1,30 @@
+[
+  {
+    "username": "Narek",
+    "email": "as",
+    "password": "$2b$10$C.SAG3PfDxFeRaUFuWFg3uwzwXNCPNwu5nbjuzkr4CoOgsaNRMW26",
+    "bio": "Sdgfbf",
+    "id": 1735934469919
+  },
+  {
+    "username": "Armen",
+    "email": "assd",
+    "password": "$2b$10$CA3BcsdVMdR7xLfgTU1Zpu0QVQ4jR/A0mCieEx2hND.F.Tn7hIOCi",
+    "bio": "Sdgfbf",
+    "id": 1735936309284
+  },
+  {
+    "username": "Taron",
+    "email": "assdh",
+    "password": "$2b$10$VwUrQR544XjtLFggQrxFbOIvrAqTPnruwk1IvJy9H7qtpG05YodPa",
+    "bio": "dgfb",
+    "id": 1735990963262
+  },
+  {
+    "username": "Tiko",
+    "email": "assdhd",
+    "password": "$2b$10$VwUrQR544XjtLFggQrxFbOIvrAqTPnruwk1IvJy9H7qtpG05YodPa",
+    "bio": "dgfbd",
+    "id": 1735990963263
+  }
+]
