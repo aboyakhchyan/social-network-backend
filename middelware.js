@@ -42,7 +42,7 @@ const validateRegister = (req, res, next) => {
     next()
 }
 
-const validateLogin = async(req, res, next) => {
+const validateLogin = async (req, res, next) => {
     const users = helper.getData(paths.usersPathFilename)
     const user = req.body
     const {username, password} = user

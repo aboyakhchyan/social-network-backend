@@ -4,12 +4,14 @@ const paths = require('./paths')
 const helper = require('./helper')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const nanoid = require('nanoid')
 const app = express()
 require('dotenv').config()
 
 const PORT = process.env.PORT
 
 app.use(express.json())
+// app.use(middleware.loggingMiddleware)
 
 
 app.post('/users/register', middleware.validateRegister, async (req, res) => {
@@ -51,17 +53,19 @@ app.post('/users/login', middleware.validateLogin, (req, res) => {
 })
 
 app.get('/users/:id', middleware.authenticationUser, (req, res) => {
+    let posts = helper.getData(paths.postsPathFilename)
     const users = helper.getData(paths.usersPathFilename)
     const {id} = req.params
-
     const user = users.find(client => client.id == id)
+
+    posts = posts.filter(post => post.author == user.username)
 
     if(!user) {
         return res.status(400).json({message: 'User not found'})
     }
     const {username, email, bio} = user
 
-    res.status(200).json({id, username, email, bio})
+    res.status(200).json({id, username, email, bio, posts: posts})
 })
 
 app.put('/users/:id', middleware.authenticationUser, async(req, res) => {
@@ -119,8 +123,11 @@ app.post('/posts', middleware.authenticationUser, (req, res) => {
 })
 
 app.get('/posts', middleware.authenticationUser, (req, res) => {
+    let likes = helper.getData(paths.likesPathFilename)
+    let comments = helper.getData(paths.commentsPathFilename)
     const posts = helper.getData(paths.postsPathFilename)
     const {author} = req.query
+
 
     let filteredPosts = posts
 
@@ -128,15 +135,37 @@ app.get('/posts', middleware.authenticationUser, (req, res) => {
         filteredPosts = filteredPosts.filter(post => post.author.toLowerCase() === author.toLocaleLowerCase())
     }
 
+    filteredPosts = filteredPosts.map(post => {
+        likes = likes.filter(like => like.post_id == post.id)
+        comments = comments.filter(comment => comment.post_id == post.id)
+
+        return {
+            ...post,
+            likes,
+            comments
+        }
+    })
+
 
     res.status(200).json(filteredPosts)
 })
 
 app.get('/posts/:id', middleware.authenticationUser, (req, res) => {
+    let likes = helper.getData(paths.likesPathFilename)
+    let comments = helper.getData(paths.commentsPathFilename)
     const posts = helper.getData(paths.postsPathFilename)
     const {id} = req.params
 
-    const result = posts.find(post => post.id == id)
+    let result = posts.find(post => post.id == id)
+
+    likes = likes.filter(like => like.post_id == result.id)
+    comments = comments.filter(comment => comment.post_id == result.id)
+
+    result = {
+        ...result,
+        likes,
+        comments
+    }
 
     res.status(200).json(result)
 })
@@ -188,12 +217,17 @@ app.delete('/posts/:id', middleware.authenticationUser, (req, res) => {
 })
 
 app.post('/posts/:id/like', middleware.authenticationUser, (req, res) => {
+    const posts = helper.getData(paths.postsPathFilename)
     let likes = helper.getData(paths.likesPathFilename)
     const {id} = req.params
     const user = req.user
 
-    const result = likes.some(like => like.post_id == id && like.author == user.username)
+    const check = posts.some(post => post.id == id)
+    if(!check) {
+        return res.status(400).json({message: 'post is not found'})
+    }
 
+    const result = likes.some(like => like.post_id == id && like.author == user.username)
     if(result) {
         likes = likes.filter(like => like.post_id != id)
         helper.setData(paths.likesPathFilename, likes)
@@ -214,16 +248,22 @@ app.post('/posts/:id/like', middleware.authenticationUser, (req, res) => {
 })
 
 app.post('/posts/:id/comment', middleware.authenticationUser, (req, res) => {
+    const posts = helper.getData(paths.postsPathFilename)
     const comments = helper.getData(paths.commentsPathFilename)
     const {id} = req.params
     const user = req.user
     const {content} = req.body
 
+    const check = posts.some(post => post.id == id)
+    if(!check) {
+        return res.status(400).json({message: 'post is not found'})
+    }
+
     if(!content.trim()) {
         return res.status(400).json({message: 'please write a comment'})
     }
 
-    const generateId = Math.random().toString(36).substring(2, 12) 
+    const generateId = nanoid()
 
     const comment = {
         id: generateId,
