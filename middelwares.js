@@ -1,5 +1,5 @@
-const helper = require('./helper')
-const paths = require('./paths')
+const helper = require('./helpers/utils')
+const paths = require('./helpers/paths')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
